@@ -64,9 +64,7 @@ export default async function FeaturedSection() {
           <hr className="border-2 border-gray-300" />
         </div>
 
-        <section 
-        className="flex flex-col gap-7 justify-between items-center mt-5 mb-10
-        md:grid lg:grid-cols-4 lg:gap-7 md:grid-cols-2">
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 lg:gap-7  gap-7 mt-5 mb-10">
           {
 allCar.map((Cars:Car)=>{
   return(
