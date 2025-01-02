@@ -69,7 +69,7 @@ export default async function FeaturedSection() {
 allCar.map((Cars:Car)=>{
   return(
     <div key={Cars.slug}>
-    <Link href={`/carDetails/${Cars.slug}`}><div className="bg-white mr-4">
+    <Link href={`/carDetails/${Cars.slug}`}><div className="bg-white mr-4 rounded-xl shadow-xl">
             <div className="w-full h-auto">
             {Cars.image && (
                     <Image
