@@ -121,9 +121,9 @@ export default async function CarDetails(props:any) {
   );
 }
 
-export const generateStaticParams = async () => {
-  const cars = await getCars();
-  return cars.map((car) => ({
-    details: car.slug,
-  }));
-};
+// export const generateStaticParams = async () => {
+//   const cars = await getCars();
+//   return cars.map((car) => ({
+//     details: car.slug,
+//   }));
+// };
