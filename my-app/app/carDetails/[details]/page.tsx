@@ -1,9 +1,8 @@
 import { urlFor } from "@/sanity/lib/image";
 import Image from "next/image";
-import { notFound } from "next/navigation";
 import Link from "next/link";
-import getCars from "@/getCars";
 import PayButton from "@/app/components/PayButton";
+import { client } from "@/sanity/lib/client";
 
 export function generateMetadata() {
   return {
@@ -12,38 +11,42 @@ export function generateMetadata() {
   };
 }
 
-interface Car {
-  name: string;
-  slug: string;
-  model: string;
-  price: string;
-  image: {
-    asset: {
-      _ref: string;
-      _type: string;
-    };
-  };
-  doors: number;
-  engine: string;
-  condition: string;
-  driven: string;
-  transmission: string;
-  suspension: string;
-  fuel: string;
-  milage: string;
-}
+export const revalidate = 30;
 
+export default async function CarDetails({ params: { details } }: { params: { details: string } }) {
+  const query = `*[_type == "cars" && slug.current == $details][0]{
+    name,
+    "slug": slug.current,
+    model,
+    price,
+    image,
+    doors,
+    engine,
+    condition,
+    driven,
+    transmission,
+    suspension,
+    fuel,
+    milage
+  }`;
 
-export default async function CarDetails(props:any) {
-  // Await params if needed (optional, depending on your setup)
-  const carSlug =props.params.details;
-
-  const cars = await getCars();
-  const car = cars.find((car: Car) => car.slug === carSlug);
+  const car = await client.fetch(query, { details });
 
   if (!car) {
-    notFound();
+    return (
+      <main>
+        <section className="flex justify-center items-center bg-gray-200 min-h-screen">
+          <div className="text-center">
+            <h1 className="text-xl font-semibold text-red-600">
+              Car details not found. Please check the URL or try again.
+            </h1>
+          </div>
+        </section>
+      </main>
+    );
   }
+
+
 
   return (
     <main>
@@ -58,6 +61,7 @@ export default async function CarDetails(props:any) {
               alt={`Image of ${car.name}`}
               width={600}
               height={400}
+              className="rounded-xl"
             />
           </div>
           <div className="flex flex-col justify-between text-xs p-10 lg:flex-row">
@@ -121,9 +125,14 @@ export default async function CarDetails(props:any) {
   );
 }
 
-// export const generateStaticParams = async () => {
-//   const cars = await getCars();
-//   return cars.map((car) => ({
-//     details: car.slug,
-//   }));
-// };
+export const generateStaticParams = async () => {
+  const query = `*[_type == 'cars']{
+    "slug": slug.current
+  }`;
+  const slugs: Car[] = await client.fetch(query);
+
+  console.log(slugs);
+  return slugs.map((car) => ({
+    details: car.slug,
+  }));
+};
