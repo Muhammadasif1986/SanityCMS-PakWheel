@@ -4,6 +4,7 @@ import Link from "next/link";
 import PayButton from "@/app/components/PayButton";
 import { client } from "@/sanity/lib/client";
 
+// Metadata for the page
 export function generateMetadata() {
   return {
     title: "Dynamic Sanity CMS",
@@ -11,25 +12,18 @@ export function generateMetadata() {
   };
 }
 
-export const revalidate = 30;
+// Revalidation time for ISR
+export const revalidate = 60;
 
-export default async function CarDetails({ params: { details } }: { params: { details: string } }) {
-  const query = `*[_type == "cars" && slug.current == $details][0]{
-    name,
-    "slug": slug.current,
-    model,
-    price,
-    image,
-    doors,
-    engine,
-    condition,
-    driven,
-    transmission,
-    suspension,
-    fuel,
-    milage
-  }`;
 
+export default async function CarDetails({
+  params: { details },
+}: {
+  params: { details: string };
+}) {
+  const query = `*[_type == "cars" && slug.current == $details][0]`;
+
+ 
   const car = await client.fetch(query, { details });
 
   if (!car) {
@@ -45,8 +39,6 @@ export default async function CarDetails({ params: { details } }: { params: { de
       </main>
     );
   }
-
-
 
   return (
     <main>
@@ -81,35 +73,34 @@ export default async function CarDetails({ params: { details } }: { params: { de
           <h1 className="text-2xl font-medium items-center pb-10">
             Vehicle Description
           </h1>
-          <div className="flex flex-col text-xs font-black w-full h-auto lg:pl-10 lg:flex-row">
-            <ul className="flex flex-col items-center lg:flex-row">
+          <div className="flex flex-wrap text-xs font-black w-full lg:pl-10">
+            <ul className="flex flex-wrap">
               <li className="pr-2 mr-2">
-                Numbers of Doors <span className="font-normal">{car.doors},</span>
-              </li>
-              <li className="pr-2 mr-2">
-                Engine <span className="font-normal">{car.engine},</span>
+                Numbers of Doors:{" "}
+                <span className="font-normal">{car.doors}</span>
               </li>
               <li className="pr-2 mr-2">
-                Condition <span className="font-normal">{car.condition},</span>
+                Engine: <span className="font-normal">{car.engine}</span>
               </li>
               <li className="pr-2 mr-2">
-                Driven <span className="font-normal">{car.driven},</span>
+                Condition: <span className="font-normal">{car.condition}</span>
               </li>
               <li className="pr-2 mr-2">
-                Suspension Type <span className="font-normal">{car.suspension},</span>
+                Driven: <span className="font-normal">{car.driven}</span>
               </li>
-            </ul>
-          </div>
-          <div className="flex flex-col text-xs font-black w-full h-auto lg:pl-10 lg:flex-row">
-            <ul className="flex flex-col items-center lg:flex-row">
-              <li className="mr-2">
-                Avg <span className="font-normal pl-2">{car.milage},</span>
+              <li className="pr-2 mr-2">
+                Suspension Type:{" "}
+                <span className="font-normal">{car.suspension}</span>
               </li>
-              <li className="mr-2">
-                Transmission <span className="font-normal pl-2">{car.transmission},</span>
+              <li className="pr-2 mr-2">
+                Avg Mileage: <span className="font-normal">{car.milage}</span>
               </li>
-              <li className="mr-2">
-                Fuel Type <span className="font-normal pl-2">{car.fuel},</span>
+              <li className="pr-2 mr-2">
+                Transmission:{" "}
+                <span className="font-normal">{car.transmission}</span>
+              </li>
+              <li className="pr-2 mr-2">
+                Fuel Type: <span className="font-normal">{car.fuel}</span>
               </li>
             </ul>
           </div>
@@ -125,14 +116,15 @@ export default async function CarDetails({ params: { details } }: { params: { de
   );
 }
 
+// Generating static paths for cars
 export const generateStaticParams = async () => {
   const query = `*[_type == 'cars']{
     "slug": slug.current
   }`;
-  const slugs: Car[] = await client.fetch(query);
 
-  console.log(slugs);
-  return slugs.map((car) => ({
+  const slugs = await client.fetch(query);
+
+  return slugs.map((car: { slug: string }) => ({
     details: car.slug,
   }));
 };

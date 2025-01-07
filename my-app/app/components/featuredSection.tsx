@@ -1,3 +1,4 @@
+'use client'
 import { Inter } from "next/font/google";
 import Link from "next/link";
 import Image from "next/image";
@@ -7,16 +8,36 @@ import { client } from "@/sanity/lib/client";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
-export const revalidate = 30;
+export const revalidate = 60;
+
+interface Car {
+  name: string;
+  image: {
+    asset: {
+      _ref: string;
+      _type: string;
+    };
+  };
+  price: number;
+  model: string;
+  slug: string;
+}
+
 export default async function FeaturedSection() {
-  const query = `*[_type == 'cars']{
-    name,
-    image,
-    price,
-    model,
-    "slug":slug.current
-  }`;
-  const allCar: Car[] = await client.fetch(query);
+  let allCar: Car[] = [];
+
+  try {
+    const query = `*[_type == 'cars']{
+      name,
+      image,
+      price,
+      model,
+      "slug":slug.current
+    }`;
+    allCar = await client.fetch(query);
+  } catch (error) {
+    console.error("Error fetching featured cars:", error);
+  }
 
   return (
     <main className={inter.className}>
@@ -49,40 +70,42 @@ export default async function FeaturedSection() {
           </div>
 
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 lg:gap-7 gap-7 mt-5 mb-10">
-            {allCar.map((Cars:Car) => (
-              <div key={Cars.slug}>
-                <Link href={`/carDetails/${Cars.slug}`}>
-                  <div className="bg-white mr-4 rounded-xl shadow-xl">
-                    <div className="w-full h-auto">
-                      {Cars.image && (
-                        <Image
-                          src={urlFor(Cars.image).width(500).height(300).url()}
-                          alt={`${Cars.name}`}
-                          width={300}
-                          height={300}
-                        />
-                      )}
-                    </div>
-                    <div className="flex flex-col justify-center items-center py-5">
-                      <h1 className="text-blue-900 text-base font-semibold">
-                        {Cars.name}
-                      </h1>
-                      <p className="text-green-500 text-base">PKR {Cars.price}</p>
-                      <div className="flex items-center py-4">
-                        <span className="flex items-center text-base text-orange-500">
-                          <MdOutlineStar />
-                          <MdOutlineStar />
-                          <MdOutlineStar />
-                          <MdOutlineStarOutline />
-                          <MdOutlineStarOutline />
-                        </span>
-                        <p className="text-blue-700 text-sm">{Cars.model}</p>
+            
+             { allCar.map((Cars: Car) => (
+                <div key={Cars.slug}>
+                  <Link href={`/carDetails/${Cars.slug}`}>
+                    <div className="bg-white mr-4 rounded-xl shadow-xl">
+                      <div className="w-full h-auto">
+                        {Cars.image && (
+                          <Image
+                            src={urlFor(Cars.image).width(500).height(300).url()}
+                            alt={`${Cars.name}`}
+                            width={300}
+                            height={300}
+                          />
+                        )}
+                      </div>
+                      <div className="flex flex-col justify-center items-center py-5">
+                        <h1 className="text-blue-900 text-base font-semibold">
+                          {Cars.name}
+                        </h1>
+                        <p className="text-green-500 text-base">PKR {Cars.price}</p>
+                        <div className="flex items-center py-4">
+                          <span className="flex items-center text-base text-orange-500">
+                            <MdOutlineStar />
+                            <MdOutlineStar />
+                            <MdOutlineStar />
+                            <MdOutlineStarOutline />
+                            <MdOutlineStarOutline />
+                          </span>
+                          <p className="text-blue-700 text-sm">{Cars.model}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              </div>
-            ))}
+                  </Link>
+                </div>
+              ))
+           }
           </section>
         </div>
       </div>
